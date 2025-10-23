@@ -1,0 +1,160 @@
+-- Creación de tablas para el sistema de matrícula universitaria - MySQL
+
+-- Tabla ESTUDIANTE
+CREATE TABLE estudiante (
+    estudiante_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    dni VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    telefono VARCHAR(20),
+    fecha_nacimiento DATE NOT NULL,
+    direccion VARCHAR(200),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla PROFESOR
+CREATE TABLE profesor (
+    profesor_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    dni VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    telefono VARCHAR(20),
+    especialidad VARCHAR(100),
+    titulo_academico VARCHAR(100),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla FACULTAD
+CREATE TABLE facultad (
+    facultad_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    descripcion TEXT,
+    ubicacion VARCHAR(100),
+    decano VARCHAR(100),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla CARRERA
+CREATE TABLE carrera (
+    carrera_id INT AUTO_INCREMENT PRIMARY KEY,
+    facultad_id INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    duracion_semestres INT NOT NULL,
+    titulo_otorgado VARCHAR(100),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    CONSTRAINT fk_facultad FOREIGN KEY (facultad_id) REFERENCES facultad(facultad_id) ON DELETE RESTRICT,
+    CONSTRAINT uk_carrera_nombre UNIQUE (nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla CURSO
+CREATE TABLE curso (
+    curso_id INT AUTO_INCREMENT PRIMARY KEY,
+    carrera_id INT NOT NULL,
+    codigo VARCHAR(20) UNIQUE NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    creditos INT NOT NULL,
+    nivel_semestre INT NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    CONSTRAINT fk_carrera FOREIGN KEY (carrera_id) REFERENCES carrera(carrera_id) ON DELETE RESTRICT,
+    CONSTRAINT ck_creditos CHECK (creditos > 0),
+    CONSTRAINT ck_nivel_semestre CHECK (nivel_semestre > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla PRERREQUISITO
+CREATE TABLE prerrequisito (
+    prerrequisito_id INT AUTO_INCREMENT PRIMARY KEY,
+    curso_id INT NOT NULL,
+    curso_req_id INT NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_curso FOREIGN KEY (curso_id) REFERENCES curso(curso_id) ON DELETE CASCADE,
+    CONSTRAINT fk_curso_req FOREIGN KEY (curso_req_id) REFERENCES curso(curso_id) ON DELETE CASCADE,
+    CONSTRAINT uk_prerrequisito UNIQUE (curso_id, curso_req_id),
+    CONSTRAINT ck_curso_diferente CHECK (curso_id != curso_req_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla SECCION
+CREATE TABLE seccion (
+    seccion_id INT AUTO_INCREMENT PRIMARY KEY,
+    curso_id INT NOT NULL,
+    profesor_id INT NOT NULL,
+    codigo VARCHAR(20) NOT NULL,
+    capacidad_maxima INT NOT NULL,
+    aula VARCHAR(50),
+    horario VARCHAR(50),
+    dias VARCHAR(50),
+    periodo_academico VARCHAR(20) NOT NULL,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    CONSTRAINT fk_seccion_curso FOREIGN KEY (curso_id) REFERENCES curso(curso_id) ON DELETE RESTRICT,
+    CONSTRAINT fk_seccion_profesor FOREIGN KEY (profesor_id) REFERENCES profesor(profesor_id) ON DELETE RESTRICT,
+    CONSTRAINT uk_seccion_periodo UNIQUE (curso_id, codigo, periodo_academico),
+    CONSTRAINT ck_capacidad_maxima CHECK (capacidad_maxima > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla MATRICULA
+CREATE TABLE matricula (
+    matricula_id INT AUTO_INCREMENT PRIMARY KEY,
+    estudiante_id INT NOT NULL,
+    seccion_id INT NOT NULL,
+    fecha_matricula DATE NOT NULL DEFAULT (CURRENT_DATE),
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
+    costo DECIMAL(10, 2) NOT NULL,
+    metodo_pago VARCHAR(50),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_matricula_estudiante FOREIGN KEY (estudiante_id) REFERENCES estudiante(estudiante_id) ON DELETE RESTRICT,
+    CONSTRAINT fk_matricula_seccion FOREIGN KEY (seccion_id) REFERENCES seccion(seccion_id) ON DELETE RESTRICT,
+    CONSTRAINT uk_matricula_seccion UNIQUE (estudiante_id, seccion_id),
+    CONSTRAINT ck_estado CHECK (estado IN ('PENDIENTE', 'PAGADO', 'ANULADO', 'COMPLETADO')),
+    CONSTRAINT ck_costo CHECK (costo >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla PAGO
+CREATE TABLE pago (
+    pago_id INT AUTO_INCREMENT PRIMARY KEY,
+    matricula_id INT NOT NULL,
+    fecha_pago DATE NOT NULL DEFAULT (CURRENT_DATE),
+    monto DECIMAL(10, 2) NOT NULL,
+    metodo_pago VARCHAR(50) NOT NULL,
+    referencia VARCHAR(100),
+    estado VARCHAR(20) NOT NULL DEFAULT 'PROCESADO',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pago_matricula FOREIGN KEY (matricula_id) REFERENCES matricula(matricula_id) ON DELETE RESTRICT,
+    CONSTRAINT ck_monto CHECK (monto > 0),
+    CONSTRAINT ck_estado_pago CHECK (estado IN ('PENDIENTE', 'PROCESADO', 'RECHAZADO'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla CALIFICACION
+CREATE TABLE calificacion (
+    calificacion_id INT AUTO_INCREMENT PRIMARY KEY,
+    matricula_id INT NOT NULL,
+    nota DECIMAL(5, 2),
+    observacion TEXT,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_calificacion_matricula FOREIGN KEY (matricula_id) REFERENCES matricula(matricula_id) ON DELETE RESTRICT,
+    CONSTRAINT uk_calificacion_matricula UNIQUE (matricula_id),
+    CONSTRAINT ck_nota CHECK (nota >= 0 AND nota <= 20)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX idx_estudiante_apellido ON estudiante(apellido);
+CREATE INDEX idx_profesor_apellido ON profesor(apellido);
+CREATE INDEX idx_curso_nombre ON curso(nombre);
+CREATE INDEX idx_curso_codigo ON curso(codigo);
+CREATE INDEX idx_matricula_estudiante ON matricula(estudiante_id);
+CREATE INDEX idx_matricula_seccion ON matricula(seccion_id);
+CREATE INDEX idx_seccion_curso ON seccion(curso_id);
+CREATE INDEX idx_seccion_profesor ON seccion(profesor_id);
+CREATE INDEX idx_seccion_periodo ON seccion(periodo_academico);
+CREATE INDEX idx_carrera_facultad ON carrera(facultad_id);
+
