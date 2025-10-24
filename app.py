@@ -28,7 +28,7 @@ def get_db_connection():
 def index():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT * FROM profesor')
+    cursor.execute('SELECT * FROM profesor ORDER BY profesor_id')
     profesores = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -39,14 +39,17 @@ def crear():
     if request.method == 'POST':
         nombre = request.form['nombre']
         apellido = request.form['apellido']
+        dni = request.form['dni']
         email = request.form['email']
+        telefono = request.form.get('telefono', '')
         especialidad = request.form['especialidad']
+        titulo_academico = request.form.get('titulo_academico', '')
 
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            'INSERT INTO profesor (nombre, apellido, email, especialidad) VALUES (%s, %s, %s, %s)',
-            (nombre, apellido, email, especialidad)
+            'INSERT INTO profesor (nombre, apellido, dni, email, telefono, especialidad, titulo_academico) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+            (nombre, apellido, dni, email, telefono, especialidad, titulo_academico)
         )
         conn.commit()
         cursor.close()
@@ -65,12 +68,15 @@ def editar(id):
     if request.method == 'POST':
         nombre = request.form['nombre']
         apellido = request.form['apellido']
+        dni = request.form['dni']
         email = request.form['email']
+        telefono = request.form.get('telefono', '')
         especialidad = request.form['especialidad']
+        titulo_academico = request.form.get('titulo_academico', '')
 
         cursor.execute(
-            'UPDATE profesor SET nombre=%s, apellido=%s, email=%s, especialidad=%s WHERE id=%s',
-            (nombre, apellido, email, especialidad, id)
+            'UPDATE profesor SET nombre=%s, apellido=%s, dni=%s, email=%s, telefono=%s, especialidad=%s, titulo_academico=%s WHERE profesor_id=%s',
+            (nombre, apellido, dni, email, telefono, especialidad, titulo_academico, id)
         )
         conn.commit()
         cursor.close()
@@ -79,7 +85,7 @@ def editar(id):
         flash('Profesor actualizado exitosamente', 'success')
         return redirect(url_for('index'))
 
-    cursor.execute('SELECT * FROM profesor WHERE id = %s', (id,))
+    cursor.execute('SELECT * FROM profesor WHERE profesor_id = %s', (id,))
     profesor = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -90,7 +96,7 @@ def editar(id):
 def eliminar(id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM profesor WHERE id = %s', (id,))
+    cursor.execute('DELETE FROM profesor WHERE profesor_id = %s', (id,))
     conn.commit()
     cursor.close()
     conn.close()

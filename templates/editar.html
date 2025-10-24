@@ -32,13 +32,28 @@
             </div>
 
             <div class="form-group">
+                <label for="dni">DNI:</label>
+                <input type="text" id="dni" name="dni" value="{{ profesor.dni }}" required>
+            </div>
+
+            <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" value="{{ profesor.email }}" required>
             </div>
 
             <div class="form-group">
+                <label for="telefono">Telefono:</label>
+                <input type="text" id="telefono" name="telefono" value="{{ profesor.telefono }}">
+            </div>
+
+            <div class="form-group">
                 <label for="especialidad">Especialidad:</label>
                 <input type="text" id="especialidad" name="especialidad" value="{{ profesor.especialidad }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="titulo_academico">Titulo Academico:</label>
+                <input type="text" id="titulo_academico" name="titulo_academico" value="{{ profesor.titulo_academico }}">
             </div>
 
             <button type="submit" class="btn btn-primary">Actualizar</button>

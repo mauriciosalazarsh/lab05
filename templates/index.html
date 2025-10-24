@@ -40,22 +40,28 @@
                     <th>ID</th>
                     <th>Nombre</th>
                     <th>Apellido</th>
+                    <th>DNI</th>
                     <th>Email</th>
+                    <th>Telefono</th>
                     <th>Especialidad</th>
+                    <th>Titulo</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for profesor in profesores %}
                 <tr>
-                    <td>{{ profesor.id }}</td>
+                    <td>{{ profesor.profesor_id }}</td>
                     <td>{{ profesor.nombre }}</td>
                     <td>{{ profesor.apellido }}</td>
+                    <td>{{ profesor.dni }}</td>
                     <td>{{ profesor.email }}</td>
+                    <td>{{ profesor.telefono }}</td>
                     <td>{{ profesor.especialidad }}</td>
+                    <td>{{ profesor.titulo_academico }}</td>
                     <td>
-                        <a href="{{ url_for('editar', id=profesor.id) }}" class="btn btn-edit">Editar</a>
-                        <a href="{{ url_for('eliminar', id=profesor.id) }}" class="btn btn-delete" onclick="return confirm('¿Estás seguro de eliminar este profesor?')">Eliminar</a>
+                        <a href="{{ url_for('editar', id=profesor.profesor_id) }}" class="btn btn-edit">Editar</a>
+                        <a href="{{ url_for('eliminar', id=profesor.profesor_id) }}" class="btn btn-delete" onclick="return confirm('¿Estás seguro de eliminar este profesor?')">Eliminar</a>
                     </td>
                 </tr>
                 {% endfor %}
