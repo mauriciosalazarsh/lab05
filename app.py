@@ -15,7 +15,10 @@ def get_db_connection():
                 host=os.getenv('DB_HOST', 'mysql'),
                 user=os.getenv('DB_USER', 'root'),
                 password=os.getenv('DB_PASSWORD', 'root123'),
-                database=os.getenv('DB_NAME', 'universidad')
+                database=os.getenv('DB_NAME', 'universidad'),
+                charset='utf8mb4',
+                collation='utf8mb4_unicode_ci',
+                use_unicode=True
             )
             return connection
         except mysql.connector.Error as err:
